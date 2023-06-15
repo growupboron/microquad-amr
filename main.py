@@ -25,6 +25,19 @@ def snspd_image():
     else:
         return None
 
+def snspd_output():
+    folder_path = './data/output'
+    image_files = []
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.jpeg'):
+            image_files.append(os.path.join(folder_path, filename))
+
+    if image_files:
+        random_image_path = random.choice(image_files)
+        return random_image_path
+    else:
+        return None
+
 def snspd_data():
     # Generate random peaks
     num_peaks = np.random.randint(2, 5)  # Randomly select the number of peaks
@@ -115,9 +128,9 @@ def display_image():
     
 def display_output():
     # Display an output image in the tkinter window
-    output_path = 'data/microquad.png'
+    output_path = snspd_output()
     output_image = Image.open(output_path)
-    output_image = output_image.resize((800, 600))  # Resize the image to fit the window
+    output_image = output_image.resize((850, 1100))  # Resize the image to fit the window
 
     global output_photo, output_window
 
