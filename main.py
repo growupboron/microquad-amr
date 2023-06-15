@@ -6,9 +6,48 @@ from PyPDF2 import PdfReader
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pdf2image import convert_from_path
 import RPi.GPIO as GPIO
+import os
+import random
+import numpy as np
+
+np.random.seed(42)
+
+def snspd_image():
+    folder_path = './data/snspd'
+    image_files = []
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.jpeg'):
+            image_files.append(os.path.join(folder_path, filename))
+
+    if image_files:
+        random_image_path = random.choice(image_files)
+        return random_image_path
+    else:
+        return None
+
+def snspd_data():
+    # Generate random peaks
+    num_peaks = np.random.randint(2, 5)  # Randomly select the number of peaks
+    peak_centers = np.random.uniform(1200, 1800, size=num_peaks)  # Randomly select the peak centers
+    peak_amplitudes = np.random.randint(100, 500, size=num_peaks)  # Randomly select the peak amplitudes
+    
+    # Generate the x values (wavelength)
+    x = np.linspace(1000, 2000, 300)
+    
+    # Generate the y values (number of photons) with added noise
+    y = np.zeros_like(x)
+    for center, amplitude in zip(peak_centers, peak_amplitudes):
+        y += amplitude * np.exp(-(x - center)**2 / 100**2)  # Gaussian distribution with a standard deviation of 100
+    
+    # Add random noise to the y-values
+    noise = np.random.normal(0, 30, size=len(y))  # Adjust the standard deviation (50) to control the noise level
+    y += noise
+    
+    return x, y
+
 
 # GPIO pin number for the push button
-BUTTON_PIN = 17
+BUTTON_PIN = 17 #GPIO17 or PIN 11
 
 # Initialize tkinter
 root = tk.Tk()
@@ -16,22 +55,20 @@ root = tk.Tk()
 # Store references to the plot, image, and PDF windows
 plot_window = None
 image_window = None
+output_window = None
 pdf_window = None
 
 # Store references to the image and PDF PhotoImage objects
 image_photo = None
+output_photo = None
 pdf_photo = None
 
-def display_plot():
-    # Generate some data for the plot
-    x = [1, 2, 3, 4, 5]
-    y = [2, 4, 6, 8, 10]
-
+def display_plot(x, y):
     # Create the plot
     fig, ax = plt.subplots()
     ax.plot(x, y)
-    ax.set_xlabel('X-axis')
-    ax.set_ylabel('Y-axis')
+    ax.set_xlabel('Wavelength (nm)')
+    ax.set_ylabel('No of Photons')
     ax.set_title('Plot')
 
     global plot_window
@@ -56,7 +93,7 @@ def display_plot():
 
 def display_image():
     # Display an image in the tkinter window
-    image_path = 'data/test.png'
+    image_path = snspd_image()
     image = Image.open(image_path)
     image = image.resize((800, 600))  # Resize the image to fit the window
 
@@ -75,6 +112,28 @@ def display_image():
 
     image_label = tk.Label(image_window, image=image_photo)
     image_label.pack()
+    
+def display_output():
+    # Display an output image in the tkinter window
+    output_path = 'data/microquad.png'
+    output_image = Image.open(output_path)
+    output_image = output_image.resize((800, 600))  # Resize the image to fit the window
+
+    global output_photo, output_window
+
+    # Close the previous output window if it exists
+    if output_window is not None:
+        output_window.destroy()
+
+    # Create a new output window
+    output_window = tk.Toplevel(root)
+    output_window.title('Output Display')
+
+    # Create a PhotoImage object and keep a reference to it
+    output_photo = ImageTk.PhotoImage(output_image)
+
+    output_label = tk.Label(output_window, image=output_photo)
+    output_label.pack()
 
 
 def display_pdf():
@@ -108,9 +167,11 @@ def display_pdf():
 # Callback function for button press event
 def button_pressed(channel):
     # Call the functions to display the plot, image, and PDF
-    display_plot()
+    x, y = snspd_data()
+    display_plot(x, y)
     display_image()
-    display_pdf()
+    display_output()
+    # display_pdf()
 
 
 # Configure GPIO
