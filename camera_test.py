@@ -10,8 +10,8 @@ def main():
         return
     
     # Set the video frame width and height (adjust as needed)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     
     # Create a window to display the video
     cv2.namedWindow("PiCam Stream", cv2.WINDOW_NORMAL)
@@ -24,8 +24,11 @@ def main():
         if not ret:
             break
         
-        # Display the frame in the "PiCam Stream" window
-        cv2.imshow("PiCam Stream", frame)
+        # Flip the frame vertically
+        flipped_frame = cv2.flip(frame, 0)
+        
+        # Display the flipped frame in the "PiCam Stream" window
+        cv2.imshow("PiCam Stream", flipped_frame)
         
         # Check for keypress and exit if 'q' is pressed
         if cv2.waitKey(1) == ord('q'):
