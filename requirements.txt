@@ -1,0 +1,6 @@
+matplotlib
+Pillow
+PyPDF2
+pdf2image
+numpy
+tkinter
